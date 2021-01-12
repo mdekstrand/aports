@@ -1,6 +1,6 @@
 # Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 pkgname=ncurses
-pkgver=6.2_p20201227
+pkgver=6.2_p20210109
 _ver=${pkgver/_p/-}
 pkgrel=0
 pkgdesc="Console display library"
@@ -110,4 +110,4 @@ static() {
 	mv "$pkgdir"/usr/lib/*.a "$subpkgdir"/usr/lib/
 }
 
-sha512sums="e3dadf28d70f7305ccd44d91e048096299992325a9e9854ed7714a5821e99ca357f650f1cd0bd53ce46f3b18c004af2cea3059a473f4df2f3df9526b0cf315b8  ncurses-6.2-20201227.tgz"
+sha512sums="a4adb1000632261f5e42e768051bb4d2cae47d994b13d8e7416ffca048445b09fa96155cb3690000b2725e500b469cce051efc74fe0bcde72b91005586db3c47  ncurses-6.2-20210109.tgz"

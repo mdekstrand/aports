@@ -1,13 +1,13 @@
 # Contributor: Bart Ribbers <bribbers@disroot.org>
 # Maintainer: Bart Ribbers <bribbers@disroot.org>
 pkgname=bluedevil
-pkgver=5.20.4
-pkgrel=0
+pkgver=5.20.5
+pkgrel=1
 pkgdesc="Integrate the Bluetooth technology within KDE workspace and applications"
 # armhf blocked by qt5-qtdeclarative
 # s390x blocked by kiconthemes
 arch="all !armhf !s390x !mips64"
-url="https://www.kde.org/workspaces/plasmadesktop/"
+url="https://kde.org/plasma-desktop/"
 license="GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR LGPL-3.0-only)"
 depends="kded bluez"
 makedepends="extra-cmake-modules qt5-qtbase-dev qt5-qtdeclarative-dev kcoreaddons-dev kwidgetsaddons-dev kdbusaddons-dev knotifications-dev kwindowsystem-dev kiconthemes-dev plasma-framework-dev ki18n-dev kio-dev bluez-qt-dev kded-dev kded shared-mime-info"
@@ -31,4 +31,4 @@ package() {
 	DESTDIR="$pkgdir" cmake --build build --target install
 }
 
-sha512sums="732e3daaeba782d6935bd9feb1feb2233e33c6eaf9b2767cb646a78a6aa4346f84cfc5c7cbfccb02df46d8a85035e5f0b1907f296c2a2ddf120689e3cfd0b45a  bluedevil-5.20.4.tar.xz"
+sha512sums="768100b8f34e9a4d2cf1f64910ff490f15be04a2aecc241d64e72c4b57954cf1f48be93c640f93f8c455ef69548f26e659f7a4bec88228490b85130ba042328a  bluedevil-5.20.5.tar.xz"

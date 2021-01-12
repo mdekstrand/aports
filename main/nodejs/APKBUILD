@@ -6,6 +6,9 @@
 # Maintainer: Jakub Jirutka <jakub@jirutka.cz>
 #
 # secfixes:
+#   14.15.4-r0:
+#     - CVE-2020-8265
+#     - CVE-2020-8287
 #   14.15.1-r0:
 #     - CVE-2020-8277
 #   12.18.4-r0:
@@ -57,8 +60,8 @@
 pkgname=nodejs
 # Note: Update only to even-numbered versions (e.g. 6.y.z, 8.y.z)!
 # Odd-numbered versions are supported only for 9 months by upstream.
-pkgver=14.15.3
-pkgrel=1
+pkgver=14.15.4
+pkgrel=0
 pkgdesc="JavaScript runtime built on V8 engine - LTS version"
 url="https://nodejs.org/"
 arch="all !mips64 !mips64el"
@@ -67,6 +70,7 @@ depends="ca-certificates nghttp2-libs>=1.41"
 makedepends="
 	brotli-dev
 	c-ares-dev
+	icu-dev
 	linux-headers
 	nghttp2-dev
 	openssl-dev
@@ -77,7 +81,7 @@ subpackages="$pkgname-dev $pkgname-doc npm::noarch"
 provides="nodejs-lts=$pkgver"  # for backward compatibility
 replaces="nodejs-current nodejs-lts"  # nodejs-lts for backward compatibility
 source="https://nodejs.org/dist/v$pkgver/node-v$pkgver.tar.gz
-	dont-run-gyp-files-for-bundled-deps.patch
+	disable-running-gyp-on-shared-deps.patch
 	link-with-libatomic-on-mips32.patch
 	"
 builddir="$srcdir/node-v$pkgver"
@@ -109,6 +113,9 @@ build() {
 	# compatibility and it has happened several times in past that we
 	# couldn't upgrade nodejs package in stable branches to fix CVEs due to
 	# libuv incompatibility.
+	#
+	# TODO: After icu package is modified to split data into multiple
+	# variants, change --with-intl to "system-icu".
 	python3 configure.py --prefix=/usr \
 		$_carchflags \
 		--shared-brotli \
@@ -116,7 +123,9 @@ build() {
 		--shared-openssl \
 		--shared-cares \
 		--shared-nghttp2 \
-		--openssl-use-def-ca-store
+		--openssl-use-def-ca-store \
+		--with-icu-default-data-dir=$(icu-config --icudatadir) \
+		--with-intl=small-icu
 
 	make BUILDTYPE=Release
 }
@@ -165,6 +174,6 @@ npm() {
 	mv "$pkgdir"/usr/lib/node_modules/npm "$subpkgdir"/usr/lib/node_modules/
 }
 
-sha512sums="3a8156e05ab4753b9d35dad43ef81c96ee56694473118d3900719c86d3b8c75440f474c7952e6fe0e26ca326fa15e4c30907270333133e4c9e7fd55df44c926a  node-v14.15.3.tar.gz
-9db5ee56938da304e9f7b31856e2d81f8d8a11e6bbf2d500b0da7404d80e06c238a6fd527a9f472c790872200ecaba2e9099d02449baacc84209b8abd6400bbe  dont-run-gyp-files-for-bundled-deps.patch
+sha512sums="7b0cfb71ea00ce767bbc450d91fa244fd2a30275084ac500572721aefdc0eacf9bd9601fbd484d376a248793b4e84663a88926bb77a3aa9382729853807c6e26  node-v14.15.4.tar.gz
+dbe8167b61518f8f59176759d69834d57bf3e6a5a5fd3dfc2359cafe0325da08b27f8220d278ed77f50c9f63a03313eabbbb0eaca3e592e5bb4e0d5be0ced373  disable-running-gyp-on-shared-deps.patch
 44e81fbf254bd79e38b813f7f5a1336df854588939cba50aaec600660495f9b7745a7049a99eb59d15a51100b3a44f66892a902d7fc32e1399b51883ad4c02cf  link-with-libatomic-on-mips32.patch"

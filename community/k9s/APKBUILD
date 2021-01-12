@@ -1,0 +1,34 @@
+# Contributor: Galen Abell <galen@galenabell.com>
+# Maintainer: Galen Abell <galen@galenabell.com>
+pkgname=k9s
+_pkgname=github.com/derailed/k9s
+pkgver=0.24.2
+pkgrel=0
+_commit=a952806e # git rev-parse --short HEAD
+_date=2020-11-16T17:25:46UTC # date -u -d @$(date +%s) +%FT%T%Z
+pkgdesc="Kubernetes TUI"
+url="https://k9scli.io"
+arch="all !x86 !armhf !mips64" # tests fail on x86 and arm7 for some reason, missing go on mips
+license="Apache-2.0"
+makedepends="go"
+options="net chmod-clean"
+source="$pkgname-$pkgver.tar.gz::https://github.com/derailed/k9s/archive/v$pkgver.tar.gz"
+
+export GOPATH="$srcdir/go"
+export GOCACHE="$srcdir/go-build"
+export GOTMPDIR="$srcdir"
+
+build() {
+	local ldflags="-w -s -X $_pkgname/cmd.version=$pkgver -X $_pkgname/cmd.commit=$_commit -X $_pkgname/cmd.date=$_date"
+	go build -ldflags "$ldflags" -a -tags netgo -o execs/$pkgname main.go
+}
+
+check() {
+	go test ./...
+}
+
+package() {
+	install -Dm755 execs/$pkgname "$pkgdir"/usr/bin/$pkgname
+}
+
+sha512sums="437f2074c19081083bf0890a1f18afe8f5cde9ba6ac23ef46fc855de490e5c659f6081406be6d7a257d5c83eac34b3941353d81bde34db2d45a6f4fa25bc50f6  k9s-0.24.2.tar.gz"

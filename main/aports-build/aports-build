@@ -67,6 +67,7 @@ create_release() {
 	s390x) release_deps="$release_deps s390-tools";;
 	esac
 
+	log "creating $release release"
 	cd "$aports"
 	abuild-apk add --virtual .alpine-release-deps $release_deps
 	(
@@ -80,6 +81,7 @@ create_release() {
 	fi
 
 	if $use_network; then
+		log "uploading $release release"
 		ssh $upload_host mkdir -p "${upload_iso#${upload_host}:}"
 		rsync -ruva $rsync_opts "$releasedir"/* "$upload_iso" || return 1
 	fi
@@ -138,6 +140,12 @@ while true; do
 		log "$_old_tag -> $_current_tag"
 		do_release=true
 	fi
+
+	# don't create release candidates on edge
+	if [ "$rel" = "edge" ] && [ "${_current_tag%_rc*}" != "$_current_tag" ]; then
+		do_release=false
+	fi
+
 	if [ "$_old" = "$_current" ] && [ -f /tmp/uploaded ] && [ -z "$force" ] && [ "$_current_tag" = "$_old_tag" ]; then
 		break
 	fi

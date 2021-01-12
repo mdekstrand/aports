@@ -1,13 +1,13 @@
 # Contributor: Bart Ribbers <bribbers@disroot.org>
 # Maintainer: Bart Ribbers <bribbers@disroot.org>
 pkgname=kscreen
-pkgver=5.20.4
-pkgrel=0
+pkgver=5.20.5
+pkgrel=1
 pkgdesc="KDE's screen management software"
 # armhf blocked by qt5-qtdeclarative
 # s390x blocked by kconfigwidgets
 arch="all !armhf !s390x !mips64"
-url="https://www.kde.org/workspaces/plasmadesktop/"
+url="https://kde.org/plasma-desktop/"
 license="GPL-2.0-or-later AND LGPL-2.1-or-later"
 depends="hicolor-icon-theme"
 makedepends="extra-cmake-modules qt5-qtbase-dev qt5-qtsensors-dev kdbusaddons-dev kconfig-dev kconfigwidgets-dev ki18n-dev kxmlgui-dev kglobalaccel-dev kwidgetsaddons-dev kdeclarative-dev kiconthemes-dev plasma-framework-dev libkscreen-dev kcmutils-dev"
@@ -33,4 +33,4 @@ package() {
 	DESTDIR="$pkgdir" cmake --build build --target install
 }
 
-sha512sums="feef278441a019673aec6e80b786e6982aebcec93576f8dfc342deacd717dc0b03e1a485a44a0712230be65614d1d2dcba314a041eb82f2581faa2badcee6cfe  kscreen-5.20.4.tar.xz"
+sha512sums="c1a618605afe4861f9ea563472df104e0cd6f015b2ba1a0621ee6d18bd653598a6de0f800901dc07e8142969633d302e68d66f3b0b9650cbc4b6cd0eeca14dd1  kscreen-5.20.5.tar.xz"

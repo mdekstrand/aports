@@ -21,7 +21,7 @@ pkgname=nginx
 # NOTE: Upgrade only to even-numbered versions (e.g. 1.14.z, 1.16.z)!
 # Odd-numbered versions are mainline (development) versions.
 pkgver=1.18.0
-pkgrel=10
+pkgrel=13
 # Revision of nginx-tests to use for check().
 _tests_hgrev=4e0644119341
 _njs_ver=0.5.0
@@ -40,7 +40,6 @@ makedepends="
 	linux-headers
 	luajit-dev
 	openssl-dev
-	paxmark
 	pcre-dev
 	perl-dev
 	pkgconf
@@ -60,14 +59,23 @@ pkgusers="nginx"
 _grp_ngx="nginx"
 _grp_www="www-data"
 pkggroups="$_grp_ngx $_grp_www"
-install="$pkgname.pre-install $pkgname.pre-upgrade $pkgname.post-upgrade"
+install="$pkgname.pre-install $pkgname.post-install $pkgname.post-upgrade"
 subpackages="$pkgname-debug $pkgname-doc $pkgname-openrc $pkgname-vim::noarch"
-replaces="$pkgname-common $pkgname-initscripts $pkgname-lua $pkgname-rtmp"
 source="https://nginx.org/download/$pkgname-$pkgver.tar.gz
 	$pkgname-tests-$_tests_hgrev.tar.gz::https://hg.nginx.org/nginx-tests/archive/$_tests_hgrev.tar.gz
 	$pkgname-njs-$_njs_ver.tar.gz::https://hg.nginx.org/njs/archive/$_njs_ver.tar.gz
+	nginx-module-vts~01-938c19d.patch::https://github.com/vozlt/nginx-module-vts/commit/938c19d2e49d5f3355df5375725982d15f1270c4.patch
+	nginx-module-vts~02-ad40022.patch::https://github.com/vozlt/nginx-module-vts/commit/ad4002262c19e81390f518a14f99bb594862c575.patch
+	nginx-module-vts~03-c08781c.patch::https://github.com/vozlt/nginx-module-vts/commit/c08781c5095d9e6090c47176bdea322ce983ecb6.patch
+	nginx-module-vts~04-1a01a87.patch::https://github.com/vozlt/nginx-module-vts/commit/1a01a87e66c9f111fb399cf40def33ab193ae393.patch
+	nginx-module-vts~fix-uri-overflow.patch
+	nginx-module-vts~cast-key-length-to-correct-type.patch
+	nginx-module-vts~set-histogram-buckets-on-first-request.patch
+	traffic-accounting-nginx-module~disable-stream-module.patch
+	nginx_cookie_flag_module~fix-mem-allocations.patch
 	nginx.conf
 	default.conf
+	stream.conf
 	$pkgname.logrotate
 	$pkgname.initd
 	$pkgname.confd
@@ -103,6 +111,9 @@ done
 _add_module() {
 	local name="$1" ver="$2" url="$3" subdir="$4"
 	local dirname=${url##*/}-${ver#v}
+	local varprefix="_${name//-/_}"
+
+	eval "${varprefix}_ver='$ver'; ${varprefix}_url='$url'"
 
 	# Don't add new flag and source if it's already there, i.e. two or more
 	# modules share the same source (e.g. geoip2 that provides http-geoip2
@@ -114,7 +125,7 @@ _add_module() {
 	subpackages="$subpackages $pkgname-mod-$name:_module"
 }
 
-_add_module "devel-kit" "v0.3.1" "https://github.com/simpl/ngx_devel_kit"
+_add_module "devel-kit" "v0.3.1" "https://github.com/vision5/ngx_devel_kit"
 _devel_kit_so="ndk_http_module.so"
 
 _add_module "http-brotli" "v1.0.0rc" "https://github.com/google/ngx_brotli"
@@ -136,7 +147,7 @@ _http_headers_more_so="ngx_http_headers_more_filter_module.so"
 
 # luajit is required for lua-nginx-module since v0.10.14
 _add_module "http-lua" "v0.10.19" "https://github.com/openresty/lua-nginx-module"
-_http_lua_depends="$pkgname-mod-devel-kit"
+_http_lua_depends="$pkgname-mod-devel-kit lua-resty-core"
 _http_lua_provides="$pkgname-lua"  # for backward compatibility
 
 _add_module "http-lua-upstream" "v0.07" "https://github.com/openresty/lua-upstream-nginx-module"
@@ -166,14 +177,31 @@ _add_module "http-geoip2" "3.3" "https://github.com/leev/ngx_http_geoip2_module"
 _add_module "stream-geoip2" "3.3" "https://github.com/leev/ngx_http_geoip2_module"
 _stream_geoip2_depends="$pkgname-mod-stream"
 
-_add_module "http-naxsi" "1.1a" "https://github.com/nbs-system/naxsi" "naxsi_src"
+_add_module "http-naxsi" "1.3" "https://github.com/nbs-system/naxsi" "naxsi_src"
 _naxsi_provides="$pkgname-naxsi"  # for backward compatibility
 
 _add_module "http-zip" "1.2.0" "https://github.com/evanmiller/mod_zip"
 
+_add_module "http-vts" "v0.1.18" "https://github.com/vozlt/nginx-module-vts"
+_http_vts_so="ngx_http_vhost_traffic_status_module.so"
+
+_add_module "http-accounting" "v2.0" "https://github.com/Lax/traffic-accounting-nginx-module"
+
+_add_module "http-untar" "v1.0" "https://github.com/ajax16384/ngx_http_untar_module"
+
+_add_module "http-upstream-jdomain" "1.1.5" "https://github.com/nicholaschiasson/ngx_upstream_jdomain"
+
+_add_module "http-cookie-flag" "v1.1.0" "https://github.com/AirisX/nginx_cookie_flag_module"
+_http_cookie_flag_so="ngx_http_cookie_flag_filter_module.so"
+
+_add_module "http-array-var" "v0.05" "https://github.com/openresty/array-var-nginx-module"
+_http_array_var_depends="$pkgname-mod-devel-kit"
+
 
 prepare() {
 	local file; for file in $source; do
+		file=${file%%::*}
+
 		case $file in
 		*~*.patch)
 			msg $file
@@ -288,12 +316,6 @@ package() {
 	make DESTDIR="$pkgdir" install
 	chown root:root "$pkgdir"/usr/sbin/nginx
 
-	# Disable some PaX protections; this is needed for Lua module.
-	local paxflags="-m"
-	[ "$CARCH" = "x86" ] && paxflags="-msp"
-	paxmark $paxflags "$pkgdir"/usr/sbin/nginx
-	paxmark $paxflags objs-debug/nginx
-
 	install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 	install -Dm644 README "$pkgdir"/usr/share/doc/$pkgname/README
 
@@ -306,15 +328,17 @@ package() {
 	cd "$pkgdir"
 
 	install -Dm644 "$srcdir"/nginx.conf ./etc/$pkgname/nginx.conf
-	install -Dm644 "$srcdir"/default.conf ./etc/$pkgname/conf.d/default.conf
+	install -dm755 ./etc/$pkgname/http.d ./etc/$pkgname/modules
+
 	install -Dm755 "$srcdir"/$pkgname.initd ./etc/init.d/$pkgname
 	install -Dm644 "$srcdir"/$pkgname.confd ./etc/conf.d/$pkgname
 	install -Dm644 "$srcdir"/$pkgname.logrotate ./etc/logrotate.d/$pkgname
 
-	install -dm755 ./etc/$pkgname/modules
 	install -dm750 -o $pkgusers -g $_grp_ngx ./var/lib/$pkgname
 	install -dm700 -o $pkgusers -g $_grp_ngx ./var/lib/$pkgname/tmp
 	install -dm755 -g $_grp_www ./var/www/localhost/htdocs
+
+	install -Dm644 "$srcdir"/default.conf ./usr/share/$pkgname/http-default_server.conf
 
 	install -dm755 ./var/log
 	mv ./var/lib/$pkgname/logs ./var/log/$pkgname
@@ -349,14 +373,23 @@ vim() {
 }
 
 _module() {
-	local name="${subpkgname#$pkgname-mod-}"
-	name="${name//-/_}"
-	local sonames="$(eval "echo \$_${name}_so")";
-	sonames="${sonames:-"ngx_${name}_module.so"}"
+	local name="${subpkgname#$pkgname-mod-}"; name="${name//-/_}"
+	local ver=$(getvar _${name}_ver)
 
-	pkgdesc="$pkgdesc (module $name)"
-	depends="$pkgname $(eval "echo \$_${name}_depends")"
-	provides="$(eval "echo \$_${name}_provides")"
+	pkgdesc="Nginx module ${name//_/-}"
+	[ "$ver" ] && pkgdesc="Nginx third-party module ${name//_/-} (version $ver)"
+
+	url=$(getvar "_${name}_url" "$url")
+	sonames=$(getvar "_${name}_so" "ngx_${name}_module.so")
+	depends="$pkgname $(getvar "_${name}_depends")"
+	provides=$(getvar "_${name}_provides")
+
+	# Numeric prefix for the module config to ensure that modules with
+	# dependencies on other modules will be loaded after their dependencies.
+	# For simplicity, we don't actually resolve dependency tree. Instead,
+	# we just prefix the module name with a number that reflects number of
+	# the module's dependencies times ten (e.g. 10, 20, 30, ...).
+	local conf_prefix="$(echo "$depends" | wc -w)0_"
 
 	mkdir -p "$subpkgdir"/$_modules_dir
 	mkdir -p "$subpkgdir"/etc/nginx/modules
@@ -365,7 +398,7 @@ _module() {
 
 	local soname; for soname in $sonames; do
 		mv "$pkgdir"/$_modules_dir/$soname ./$_modules_dir/$soname
-		echo "load_module \"modules/$soname\";" >> ./etc/nginx/modules/$name.conf
+		echo "load_module \"modules/$soname\";" >> ./etc/nginx/modules/${conf_prefix}$name.conf
 	done
 
 	case "$name" in
@@ -376,14 +409,33 @@ _module() {
 			install -m644 -D "$srcdir"/naxsi-*/naxsi_config/naxsi_core.rules \
 				./etc/nginx/naxsi_core.rules
 		;;
+		stream)
+			mkdir -p ./etc/nginx/stream.d
+			install -m644 "$srcdir"/stream.conf ./etc/nginx/stream.conf
+		;;
 	esac
+}
+
+# Print value of the specified variable, or the default if empty or not defined.
+getvar() {
+	eval "printf '%s\n' \"\${$1:-$2}\""
 }
 
 sha512sums="8c21eeb62ab6e32e436932500f700bd2fb99fd2d29e43c08a5bfed4714c189c29c7141db551fcd5d2437303b7439f71758f7407dfd3e801e704e45e7daa78ddb  nginx-1.18.0.tar.gz
 98718e5dd6f3478397f57bb0368a159993ece27b16ab3447b9b11739a49baf908ccb4619cdf03d4a1f62208ea75db18ff72aa308cb64900a23a0bbff41482dba  nginx-tests-4e0644119341.tar.gz
 f90e894ae477bfb0fe28f24ce26f64d83749832ca45e5b3ac61d6df2c25f1a330842f13bf801cf08875c6c3006332afe3ec66d72d234dc26e5f527fb17f96370  nginx-njs-0.5.0.tar.gz
-ac7e3153ab698b4cde077f0d5d7ac0a58897927eb36cf3b58cb01268ca0296f1d589c0a5b4f889b96b5b4a57bef05b17c59be59a9d7c4d7a3d3be58f101f7f41  nginx.conf
+fa96e91f495e9891c03730bcafd948e597e7c5d74f2d30df0a8483ae04f7b30c89065a994a0baa5245470f8991db5844b26da925b23ff26c178a384f5f1a887c  nginx-module-vts~01-938c19d.patch
+1c37e58921478325bb4dd608900588cda49d608e859127f45a1df73176b228b060bf71d9530dc1ad434a287c7a3225e8fe307fcf1bd15758f327436283db6fb9  nginx-module-vts~02-ad40022.patch
+9f9cda2f3f163654100adf9cde892b26f80d3de30ffec9fcdb0b3c1a42856f9219ebb024fd4c156fd8c4c4a6c7b17faca89e16916128da232d9f3bc825d716ff  nginx-module-vts~03-c08781c.patch
+e87d9c8cbebc147881e3a40e6944acfe836f29eb7b393af0465b04dd27f1fa42f17ab63d2bcc75053812140a92dceca4eb4e1f0e35877919af4bd3cd0b2b771a  nginx-module-vts~04-1a01a87.patch
+5d6b5b2f409d8183576d7d58f75a92b859922e6dc6d2e12d3abb92f3491eca4962231c1ba5860366fd83c86283711b79a19c3c7823f042267f14925d7a49cc78  nginx-module-vts~fix-uri-overflow.patch
+90efd127fef5c89ae3148ab626a4061875d84af376d41b2bd36b2cf3188c2a244013bf1d3b09fbde51b68f59f0893e0bfaf929319aeb818904c8cdadd853c229  nginx-module-vts~cast-key-length-to-correct-type.patch
+48689e09dc87f395095408127669c9f21a32c13b1b700ffad225db0c8920ae9e4f08e88332c12c01d96ded2d091ad2033885d81d5d7c9479745b10620f36562d  nginx-module-vts~set-histogram-buckets-on-first-request.patch
+09ec9f18323197eafa55ff68e8c836ad3dd830e6cd3bd4aeaf34e179ef3f72f734a0117288c1c58813aff59f3f1f0f29ccd772a672e17551e7a4fd0693a89c92  traffic-accounting-nginx-module~disable-stream-module.patch
+ac0f912ae90e0083cc761a622290223edeed0bd32213bbe766d637ac2dfd9835d163e5d16ef28740cbad05d6d92cc418d62df3413c70b4f2c63db02f8ca1c7cc  nginx_cookie_flag_module~fix-mem-allocations.patch
+69082ffa821dd945bcbe92c4e9e93beeb60892fe235adde26613d4d6a416c14542f92bb1b2751d0dae7cc075d2eea85a70b638bd6eaa6b4834e46f77eec2a7fd  nginx.conf
 0907f69dc2d3dc1bad3a04fb6673f741f1a8be964e22b306ef9ae2f8e736e1f5733a8884bfe54f3553fff5132a0e5336716250f54272c3fec2177d6ba16986f3  default.conf
+f3321a45736697009817db335ad36d3f1d05f60d98ac90a943220cdd4c00c52632f018db6a6076d5431a483525aacc5725b87b765b590e2f63b3ef98c5b16bd8  stream.conf
 09b110693e3f4377349ccea3c43cb8199c8579ee351eae34283299be99fdf764b0c1bddd552e13e4d671b194501618b29c822e1ad53b34101a73a63954363dbb  nginx.logrotate
 ee10a5687740dde0c3d18d8b3555f49fcdc6abfc0a3bc2de1de3be0e99951a346fe8027d916aab73071ecd4e2c50871e7c867aca3a7a0fd16e3374c5caed1c57  nginx.initd
 0b9b9ed01ac077e334c034faa2679f6e26740fb3362eebf8cef82d22b2af2a3faaa53bae3c9e14af51cbf64720a7c66431905ca5cc43f978366456cc4e3b7f4a  nginx.confd
@@ -407,5 +459,11 @@ c31c46344d49704389722325a041b9cd170fa290acefe92cfc572c07f711cd3039de78f28df48ca7
 4a0af5e9afa4deb0b53de8de7ddb2cfa6430d372e1ef9e421f01b509548bd134d427345442ac1ce667338cc2a1484dc2ab732e316e878ac7d3537dc527d5f922  nginx-rtmp-module-1.2.1.tar.gz
 705851f259cca704148e3ecab38df4b9b881217023ec0027af64588b307c9c4d274b1872a6a130c5621234d484f9dcecba731f1c03f52d3bf58f7de7bb3aa9fc  nginx-vod-module-1.27.tar.gz
 06963b598c54e22d75ce837fb222f5aa6c9494c29e558ff46f1205d7159fc305414bfac4ed3288c836dcbf7628d92f26458e1992d34fc2f4b73275a32847bdc0  ngx_http_geoip2_module-3.3.tar.gz
-2b087eb2f8873f901ff52f0b20411e89d8fb50c4bc61af67a3aa8d21afd5342328163c81ad6f54773ae61fa381c7ca66b0d5369de3664340eeba4a03b3daac43  naxsi-1.1a.tar.gz
-92e1e5aa570b68a19bb718817f864c4347f6dc89f90d828071ab3d06c784cc2786674d9d64fffef8c23749d0a653f2eb996b412ab10015eea1ed895d81268ce1  mod_zip-1.2.0.tar.gz"
+d7aac69b5eceeb1b0db4741201159ade1e0e7f6f7c3e8c4afa2f8959c6c00c3b5285d5185747c2fb0b1400efda02e96799836315e7e492bb4a059b14acb2142d  naxsi-1.3.tar.gz
+92e1e5aa570b68a19bb718817f864c4347f6dc89f90d828071ab3d06c784cc2786674d9d64fffef8c23749d0a653f2eb996b412ab10015eea1ed895d81268ce1  mod_zip-1.2.0.tar.gz
+86b980095b3b80c8dce2e355db514cb4b3039c8408a2f5ca6df9e105d5462952fddd70f6581ec6aa2763e560b591664c27eefd978c4ea777b1f1f808bc60d4ec  nginx-module-vts-0.1.18.tar.gz
+0df34c3765e18dc5cc5a053d3a17dbee17a686a1f6e76ad057c262741c4e4465c66bcef86e627a19258f836cad5f14745bf046fd396b00960ad79ed20c2a07bb  traffic-accounting-nginx-module-2.0.tar.gz
+5b0800ffb98ae69d3505d9046bc7f660defa14d21b74a4e425a4b07db917e39fd9a324851be8c424f5b4b4ef83997e09d9053eb8aa9e9f1889513dd742b5abba  ngx_http_untar_module-1.0.tar.gz
+54a0aae25a80f285e76344e6d0759e9a1b707be4bc0755abf4b7e48918c8e37092b7b259d052215d875be447d79717c0626797ea449677c492aa1e473cc448fd  ngx_upstream_jdomain-1.1.5.tar.gz
+352cc3d033cc67ee34209f958dac13ada2147de429f4dd3da301c865d52970d80c8aa3c193f7fb28cf4854b88baff07b6efc3bae1fb813fe53d5956a87dfc81a  nginx_cookie_flag_module-1.1.0.tar.gz
+7c9fa9b76bc7cd2473ceae6d5ffb8de26993be9293ea967908d6c4550e086affa7016df4c936fb0b79f1142dc0aa1a5f2058d417e6433b5a3497a45d7e866e84  array-var-nginx-module-0.05.tar.gz"

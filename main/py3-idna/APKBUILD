@@ -1,8 +1,8 @@
-# Contributor: Carlo Landmeter <clandmeter@gmail.com>
+# Contributor: Carlo Landmeter <clandmeter@alpinelinux.org>
 # Maintainer: Francesco Colista <fcolista@alpinelinux.org>
 pkgname=py3-idna
 _pkgname=idna
-pkgver=2.10
+pkgver=3.1
 pkgrel=0
 pkgdesc="IDNA 2008 and UTS #46 for Python3"
 url="https://github.com/kjd/idna"
@@ -24,4 +24,4 @@ package() {
 	python3 setup.py install --prefix=/usr --root="$pkgdir"
 }
 
-sha512sums="d77a5f7e8c88d8bb898ddf2987dc300ed12ef1b3c7081b8f1d24b9250ecae5fd93057845f6b06709f9db0943c899c573de43b796d48a6d08d81c0e6f102b2bbd  idna-2.10.tar.gz"
+sha512sums="142785aedb29256b5981aad5ad197bb9a2e988e6819d58d5d63d4f9db0b773a6eec2701ea3da13078af2141c1393fea6ea16f92889eef3dd93713ce8965c2320  idna-3.1.tar.gz"

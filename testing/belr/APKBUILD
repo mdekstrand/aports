@@ -1,7 +1,7 @@
 # Contributor: Francesco Colista <fcolista@alpinelinux.org>
 # Maintainer: Francesco Colista <fcolista@alpinelinux.org>
 pkgname=belr
-pkgver=4.4.12
+pkgver=4.4.22
 pkgrel=0
 pkgdesc="ABNF Parser"
 url="https://www.linphone.org"
@@ -29,4 +29,4 @@ package() {
 	make DESTDIR="$pkgdir" install
 }
 
-sha512sums="b3a85bb0da513a47f82952ebeb5d28c03b391ec93ddab0c96890052dc72dab13f1dbd97dddae1ed520368c2627901765b6013ab9eec5f4636fc04ffab652b7bd  belr-4.4.12.tar.gz"
+sha512sums="5b08c6b1f40d4885bfcaf48473355ed084ee55a638a695836eb7d0ed50d45796be930bb867291c2526e76e2810a20fa95f8bcbe32152a77d85da32efe0185676  belr-4.4.22.tar.gz"

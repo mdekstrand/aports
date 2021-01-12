@@ -4,14 +4,16 @@
 pkgname=perl-xml-sig
 #_pkgreal is used by apkbuild-cpan to find modules at MetaCpan
 _pkgreal=XML-Sig
-pkgver=0.33
+pkgver=0.38
 pkgrel=0
 pkgdesc="A toolkit to help sign and verify XML Digital Signatures."
 url="https://metacpan.org/release/XML-Sig/"
 arch="noarch"
 license="GPL-1.0-or-later OR Artistic-1.0-Perl"
-depends="perl perl-crypt-openssl-bignum perl-crypt-openssl-dsa perl-class-accessor
-	perl-crypt-openssl-x509 perl-crypt-openssl-rsa perl-xml-libxml"
+depends="
+	perl perl-crypt-openssl-bignum perl-crypt-openssl-dsa perl-class-accessor
+	perl-crypt-openssl-x509 perl-crypt-openssl-rsa perl-xml-libxml
+	"
 makedepends="perl-dev"
 checkdepends="perl-test-exception perl-file-which"
 subpackages="$pkgname-doc"
@@ -34,4 +36,4 @@ package() {
 	find "$pkgdir" \( -name perllocal.pod -o -name .packlist \) -delete
 }
 
-sha512sums="4466e3a42ecca364bc56237dd50ebe6a327f86f4e7308a35bc303dfaa9f2b17fbe472b1ef2cd8cce091abfc1a991ed9a71ffa0f0ad6f95d4a16b83230150990b  XML-Sig-0.33.tar.gz"
+sha512sums="be6433ce7e23c5ffdefee4ee69975ad113faa8655829c544d28cc997ab3965cc4ed192e87b68bf8437faa870f8f00740ec224e58d3e5e9bea73ff2d456107af4  XML-Sig-0.38.tar.gz"

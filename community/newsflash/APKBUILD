@@ -1,0 +1,24 @@
+# Contributor: Alex McGrath <amk@amk.ie>
+# Maintainer: Alex McGrath <amk@amk.ie>
+pkgname=newsflash
+pkgver=1.1.1
+pkgrel=0
+pkgdesc="An rss feed reader that supports various web based services"
+url="https://gitlab.com/news-flash/news_flash_gtk/"
+arch="all !s390x !mips64" # cargo, rust, libhandy not found
+license="GPL-3.0-only"
+makedepends="meson bash rust cargo webkit2gtk-dev libhandy1-dev sqlite-dev gettext-dev openssl-dev"
+source="newsflash-$pkgver.tar.gz::https://gitlab.com/news-flash/news_flash_gtk/-/archive/$pkgver/news_flash_gtk-$pkgver.tar.gz"
+options="!check" # no tests
+builddir="$srcdir/news_flash_gtk-$pkgver"
+
+build() {
+	abuild-meson . output
+	meson compile -j 2 -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="b003aefb133a22a56ea1abac01035cc405542ddb062a0018f698ff295fceb11091681c8568c282021c1828ac4ef5e439e14d1b538b0b279de4c12af6edeee40a  newsflash-1.1.1.tar.gz"

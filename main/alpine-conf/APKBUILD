@@ -1,14 +1,15 @@
 # Maintainer: Natanael Copa <ncopa@alpinelinux.org>
 pkgname=alpine-conf
-pkgver=3.9.0
-pkgrel=1
+pkgver=3.11.0
+pkgrel=2
 pkgdesc="Alpine configuration management scripts"
 url="https://git.alpinelinux.org/alpine-conf/about"
 arch="all"
 license="MIT"
 depends="openrc>=0.24.1-r6 busybox>=1.26.1-r3"
-source="https://dev.alpinelinux.org/archive/alpine-conf/alpine-conf-$pkgver.tar.bz2
-	0001-setup-disk-don-t-add-syslinux-package-for-mounted-ro.patch
+source="https://gitlab.alpinelinux.org/alpine/alpine-conf/-/archive/$pkgver/alpine-conf-$pkgver.tar.gz
+	0001-update-kernel-use-nopad-Xbcj-for-modloop.patch
+	0001-update-kernel-remove-nopad.patch
 	"
 
 builddir="$srcdir"/$pkgname-$pkgver
@@ -25,5 +26,6 @@ package() {
 	done
 }
 
-sha512sums="c7f7ba8341d7c84aa85f521624de511acbea42337377693099156750462a380e0116c9bde2d3a1595c8942c024f1421e7106566c4c0415c734513ddf5ec08cb2  alpine-conf-3.9.0.tar.bz2
-7f29d2993d03d55784c60e87ea8d357744786f7de07f6946ffec24446004e62711b801a8fc5d13e36c2d72abfcaa39f97ab6c7126c70b12601aed851dd93a168  0001-setup-disk-don-t-add-syslinux-package-for-mounted-ro.patch"
+sha512sums="589278b8c4b4e87a670edda11292e93b27e21f0471749ee2e788bf620e6e957249ea1d80f44fed2600a6ed8d7943179dc2e21cd55ddcfbd8913359d0f590eb05  alpine-conf-3.11.0.tar.gz
+00ad34bdce80c716396c613b25346e23c7747b9084de0f88c2a099e5829f612b15e0a5584d139c66947907c8fbee88359979a4bea292ab5b96db4d6c2796d455  0001-update-kernel-use-nopad-Xbcj-for-modloop.patch
+c40169cc063235e09a8e3d03670e6ad19a941c58939dd9ecff6aad1781dfc7be3e19d6f23861c854dc1434282275325933eaff8bcdc54c5b08fcd53a1f4ea52b  0001-update-kernel-remove-nopad.patch"
